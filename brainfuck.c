@@ -12,15 +12,16 @@ enum instructions {
      BNEZ   = ']'
 };
     
-void exec(char* src, char* ram, int sizeSrc) {
-    char* ip = src;
+void exec(char* src, int debug) {
+    char ram[30000];
     char* dp = ram;
-    int i = 0;
+    char* ip = src;
     
-    while(*ip != 254) {
-        //~ printf("[READING]\t%c\t%ld\t%ld", *ip, ip-src, dp-ram);
-        i++;
+    while(*ip != 10) { //0x0a
         int stack = 0;
+        if (debug) 
+            printf("[READING]\t%c\t%ld\t%ld\t%d", *ip, ip-src, dp-ram, *dp);
+        
         switch(*ip) {
             case INC_DP:
                 dp++;
@@ -35,7 +36,6 @@ void exec(char* src, char* ram, int sizeSrc) {
                 *dp = -1 + *dp;
                 break;
             case OUTPUT:
-                //~ printf("diocane");
                 printf("%c\n", *dp);
                 break;
             case INPUT:
@@ -43,7 +43,9 @@ void exec(char* src, char* ram, int sizeSrc) {
                 break;
             case BEQZ:
                 if (*dp == 0) {
-                    //~ printf("\t[BEQZ]");
+                    if (debug) printf("\t[BEQZ]");
+                    
+                    ip++;
                     for(;!(*ip == BNEZ && stack == 0); ip++) {
                         if (*ip == BNEZ)
                             stack--;
@@ -54,7 +56,7 @@ void exec(char* src, char* ram, int sizeSrc) {
                 break;
             case BNEZ:
                 if (*dp != 0) {
-                    //~ printf("\t[BNEZ]");
+                    if (debug) printf("\t[BNEZ]");
                     
                     ip--;
                     for(; !(*ip == BEQZ && stack == 0); ip--) {
@@ -63,47 +65,43 @@ void exec(char* src, char* ram, int sizeSrc) {
                         if (*ip == BEQZ)
                             stack--;
                     }
-                    //~ while (1) {
-                        //~ if (*ip == BEQZ && stack == 0)
-                            //~ break;
-                            
-                        //~ if (*ip == BEQZ)
-                            //~ stack--;
-                        //~ if (*ip == BNEZ)
-                            //~ stack++;
-                        //~ ip--;
-                    //~ }
                 }
                 break;
-            default:
-                printf("ISTRUZIONE NON RICONOSCIUTA");
-                exit(-1);
             }
-        //~ printf("\n");
+        if (debug) printf("\n");
         ip++;
     }
 }
     
-int main() {
-    FILE * fileSrc = fopen("src.bf", "rb");
+int main(int argv, char** argc) {
+    int debug;
+    
+    if (argv == 1 || argv > 3) {
+        printf("There should be only 2/3 args. Exiting...");
+        exit(-1);
+    }
+    if (argv == 2)
+        debug = 0;
+    else
+        debug = atoi(argc[2]);
+    
+    FILE * fileSrc = fopen(argc[1], "rb");
     if (fileSrc == NULL) {
         printf("File not found. Exiting...");
         exit(-1); 
     }
     
+    //lunghezza del file (che palle)
     fseek(fileSrc, 0L, SEEK_END);
-    int sizeSrc = ftell(fileSrc);
-    rewind(fileSrc);
+    int size = ftell(fileSrc);    
+    char* src = calloc(size, sizeof(char));
     
-    char* src = calloc(sizeSrc, sizeof(char));
-    
-    char ram[30000]; // = calloc(30000, sizeof(char));
-    
-    for(int i=0; i < sizeSrc; i++) {
-        src[i] = fgetc(fileSrc);
+    rewind(fileSrc);    //riporta il pointer di fileSrc a inizio file
+    char c;
+    for(int i=0; (c = fgetc(fileSrc)) != 10; i++) {
+        src[i] = c;
     }
-    src[sizeSrc] = 254;
-    //~ for(int i=0; i<sizeSrc; i++)
-        //~ printf("%c, ", src[i]);
-    exec(src, ram, sizeSrc);
+    src[size] = 10;
+    
+    exec(src, debug);
 }
