@@ -1,5 +1,14 @@
+/* BRAINFUCK INTERPRETER
+ * Lanciato da linea di comando:
+ * ./brainfuck nomefile.bf <debug {0|1}>
+ * 
+*/
 #include <stdio.h>
 #include <stdlib.h>
+#define RAMSIZE 30000
+#define NEWLINE 0
+
+void exec(char* src, int debug, int newline);
 
 enum instructions {
      INC_DP = '>',
@@ -12,12 +21,45 @@ enum instructions {
      BNEZ   = ']'
 };
     
-void exec(char* src, int debug) {
-    char ram[30000];
+int main(int argv, char** argc) {
+    int debug;
+    
+    if (argv == 1 || argv > 3) {
+        printf("There should be only 2/3 args. Exiting...");
+        exit(-1);
+    }
+    if (argv == 2)
+        debug = 0;
+    else
+        debug = atoi(argc[2]);
+    
+    FILE * fileSrc = fopen(argc[1], "rb");
+    if (fileSrc == NULL) {
+        printf("File not found. Exiting...");
+        exit(-1); 
+    }
+    
+    //lunghezza del file (che palle)
+    fseek(fileSrc, 0L, SEEK_END);
+    int size = ftell(fileSrc);    
+    char* src = calloc(size, sizeof(char));
+    rewind(fileSrc);    //riporta il pointer di fileSrc a inizio file
+    
+    char c;
+    for(int i=0; (c = fgetc(fileSrc)) != 10; i++) {
+        src[i] = c;
+    }
+    src[size] = 10;
+    
+    exec(src, debug, NEWLINE);
+}
+
+void exec(char* src, int debug, int newline) {
+    char ram[RAMSIZE];
     char* dp = ram;
     char* ip = src;
     
-    while(*ip != 10) { //0x0a
+    while(*ip != 10) { //0x0a, eof in Linux
         int stack = 0;
         if (debug) 
             printf("[READING]\t%c\t%ld\t%ld\t%d", *ip, ip-src, dp-ram, *dp);
@@ -36,10 +78,11 @@ void exec(char* src, int debug) {
                 *dp = -1 + *dp;
                 break;
             case OUTPUT:
-                printf("%c\n", *dp);
+                printf("%c", *dp);
+                if (newline) printf("\n");
                 break;
             case INPUT:
-                scanf("%c", dp);
+                scanf(" %c", dp);
                 break;
             case BEQZ:
                 if (*dp == 0) {
@@ -71,37 +114,4 @@ void exec(char* src, int debug) {
         if (debug) printf("\n");
         ip++;
     }
-}
-    
-int main(int argv, char** argc) {
-    int debug;
-    
-    if (argv == 1 || argv > 3) {
-        printf("There should be only 2/3 args. Exiting...");
-        exit(-1);
-    }
-    if (argv == 2)
-        debug = 0;
-    else
-        debug = atoi(argc[2]);
-    
-    FILE * fileSrc = fopen(argc[1], "rb");
-    if (fileSrc == NULL) {
-        printf("File not found. Exiting...");
-        exit(-1); 
-    }
-    
-    //lunghezza del file (che palle)
-    fseek(fileSrc, 0L, SEEK_END);
-    int size = ftell(fileSrc);    
-    char* src = calloc(size, sizeof(char));
-    
-    rewind(fileSrc);    //riporta il pointer di fileSrc a inizio file
-    char c;
-    for(int i=0; (c = fgetc(fileSrc)) != 10; i++) {
-        src[i] = c;
-    }
-    src[size] = 10;
-    
-    exec(src, debug);
 }
