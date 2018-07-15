@@ -115,11 +115,9 @@ void exec(char* src, int debug, int newline) {
                 break;
             case BNEZ:
                 if (*dp != 0) {
-                    if (debug) printf("\t[BNEZ]");
-                    
                     ip--;
+
                     innerStackLvl = 0;
-                    
                     for(; !(*ip == BEQZ && innerStackLvl == 0); ip--) {
                         if (*ip == BNEZ)
                             innerStackLvl++;
