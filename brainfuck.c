@@ -45,7 +45,9 @@ int main(int argv, char** argc) {
     rewind(fileSrc); 
 
     char* src = calloc(size, sizeof(char));
-    int i=0; char c;
+
+    int i = 0;
+    char c;
     while ((c = fgetc(fileSrc)) != EOF) {
         if (c == '>' || c == '<' ||c == '.' ||c == ',' ||c == '-' ||c == '+' ||c == '[' ||c == ']')
             src[i++] = c;
