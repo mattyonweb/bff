@@ -46,20 +46,22 @@ int main(int argv, char** argc) {
 
     char* src = calloc(size, sizeof(char));
     int i=0; char c;
-    for(; (c = fgetc(fileSrc)) != EOF; i++) {
-        src[i] = c;
+    while ((c = fgetc(fileSrc)) != EOF) {
+        if (c == '>' || c == '<' ||c == '.' ||c == ',' ||c == '-' ||c == '+' ||c == '[' ||c == ']')
+            src[i++] = c;
     }
     src[++i] = -1;
     
     exec(src, debug, NEWLINE);
 }
 
+
 void exec(char* src, int debug, int newline) {
     char ram[RAMSIZE] = {0};
     char* dp = ram;
     char* ip = src;
     
-    while(*ip != -1) { //0x0a, eof in Linux
+    while(*ip != -1) {
         int stack = 0;
         int innerStackLvl;
 
