@@ -8,7 +8,8 @@ results = {
     "03-memory-size.bf"     : (lambda s: s.count(b"!") + 1),
     "04-obscure-problems.bf": (lambda s: s==b"H\n"),
     "05-reverse.bf"         : (lambda s: s==b"olleh"),
-    "06-rot13.bf"           : (lambda s: s==b"uryyb")
+    "06-rot13.bf"           : (lambda s: s==b"uryyb"),
+    "07-comments.bf"        : (lambda s: s==b"hello world"),
 }
 
 successful = 0
