@@ -42,14 +42,14 @@ int main(int argv, char** argc) {
     //lunghezza del file (che palle)
     fseek(fileSrc, 0L, SEEK_END);
     int size = ftell(fileSrc);    
-    rewind(fileSrc);    //riporta il pointer di fileSrc a inizio file
+    rewind(fileSrc); 
 
     char* src = calloc(size, sizeof(char));
-    char c;
-    for(int i=0; (c = fgetc(fileSrc)) != 10; i++) {
+    int i=0; char c;
+    for(; (c = fgetc(fileSrc)) != EOF; i++) {
         src[i] = c;
     }
-    src[size] = 10;
+    src[++i] = -1;
     
     exec(src, debug, NEWLINE);
 }
@@ -59,9 +59,14 @@ void exec(char* src, int debug, int newline) {
     char* dp = ram;
     char* ip = src;
     
-    while(*ip != 10) { //0x0a, eof in Linux
+    while(*ip != -1) { //0x0a, eof in Linux
         int stack = 0;
         int innerStackLvl;
+
+        if (dp - ram >= RAMSIZE) {
+            printf("Out of bound error\n");
+            exit(-1);
+        }
         
         if (debug) 
             printf("[READING]\t%c\t%d\t%d\t%d", *ip, ip-src, dp-ram, *dp);
