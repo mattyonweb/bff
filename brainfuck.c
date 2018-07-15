@@ -5,10 +5,13 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include "simple-stack.h"
+
 #define RAMSIZE 30000
 #define NEWLINE 0
 
 void exec(char* src, int debug, int newline);
+char * jmp;
 
 enum instructions {
      INC_DP = '>',
@@ -45,15 +48,31 @@ int main(int argv, char** argc) {
     rewind(fileSrc); 
 
     char* src = calloc(size, sizeof(char));
-
+    jmp = calloc(size, sizeof(int));
+    Stack stack = stackInit();
+    
     int i = 0;
     char c;
     while ((c = fgetc(fileSrc)) != EOF) {
-        if (c == '>' || c == '<' ||c == '.' ||c == ',' ||c == '-' ||c == '+' ||c == '[' ||c == ']')
+        if (c == '>' || c == '<' ||c == '.' ||c == ',' ||c == '-' ||c == '+' ||c == '[' ||c == ']') {
             src[i++] = c;
+            if (c == '[')
+                stackPush(stack, i-1);
+            if (c == ']') {
+                int idx1 = stackPop(stack);
+                int idx2 = i-1;
+                jmp[idx1] = idx2;
+                jmp[idx2] = idx1;
+            }
+        }
     }
     src[++i] = -1;
-    
+
+    for (int i=0; i<size; i++) {
+        if (jmp[i] != 0)
+            printf("%d\t\t%d\n", i, jmp[i]);
+    }
+    //exit(0);
     exec(src, debug, NEWLINE);
 }
 
@@ -98,16 +117,7 @@ void exec(char* src, int debug, int newline) {
             case BEQZ:
                 if (*dp == 0) {
                     if (debug) printf("\t[BEQZ]");
-                    
-                    ip++;
-                    innerStackLvl = 0;
-                    
-                    for(;!(*ip == BNEZ && innerStackLvl == 0); ip++) {
-                        if (*ip == BNEZ)    // Sono necessarie queste righe?
-                            innerStackLvl--;        // Tutte le [ e ] all'interno di un
-                        if (*ip == BEQZ)    // blocco [] sono da ignorare no?
-                            innerStackLvl++;
-                    }
+                    ip = src + jmp[ip - src];
                 }
                 else {
                     stack++;
@@ -115,15 +125,7 @@ void exec(char* src, int debug, int newline) {
                 break;
             case BNEZ:
                 if (*dp != 0) {
-                    ip--;
-
-                    innerStackLvl = 0;
-                    for(; !(*ip == BEQZ && innerStackLvl == 0); ip--) {
-                        if (*ip == BNEZ)
-                            innerStackLvl++;
-                        if (*ip == BEQZ)
-                            innerStackLvl--;
-                    }
+                    ip = src + jmp[ip - src] ;
                 } else {
                     stack--;
                 }
