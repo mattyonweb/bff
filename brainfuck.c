@@ -11,7 +11,7 @@
 #define NEWLINE 0
 
 void exec(char* src, int debug, int newline);
-char * jmp;
+int * jmp;
 
 enum instructions {
      INC_DP = '>',
@@ -68,10 +68,10 @@ int main(int argv, char** argc) {
     }
     src[i] = -1;
 
-    for (int i=0; i<size; i++) {
-        if (jmp[i] != 0)
-            printf("%d\t\t%d\t\t\%c\t%c\n", i, jmp[i], src[i], src[jmp[i]]);
-    }
+    //for (int i=0; i<size; i++) {
+        //if (jmp[i] != 0)
+            //printf("%d\t\t%d\t\t\%c\t%c\n", i, jmp[i], src[i], src[jmp[i]]);
+    //}
     //exit(0);
     exec(src, debug, NEWLINE);
 }
