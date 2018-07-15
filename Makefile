@@ -1,2 +1,2 @@
-myMake: brainfuck.c simple-stack.c
-	gcc -g brainfuck.c simple-stack.c -o brainfuck
+make: src/brainfuck.c src/simple-stack.c
+	gcc -g src/brainfuck.c src/simple-stack.c -o brainfuck
