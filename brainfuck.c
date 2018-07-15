@@ -10,8 +10,21 @@
 #define RAMSIZE 30000
 #define NEWLINE 0
 
-void exec(char* src, int debug, int newline);
+void exec(int debug, int newline);
+
+/* jmp -> Jump Table.
+ * Aka: una hash table; laddove, in src[idx], c'è una parentesi quadra,
+ * jmp[idx] conterrà l'indirizzo (o meglio, lo spiazzamento da &src) a cui
+ * saltare. */
 int * jmp;
+
+/* src -> source code.
+ * In fase di lettura del file sorgente, tutti i caratteri non necessari
+ * non verranno inseriti in src. */
+char * src;
+
+/* ram -> memoria centrale del programma. */
+char ram[RAMSIZE] = {0};
 
 enum instructions {
      INC_DP = '>',
@@ -47,7 +60,7 @@ int main(int argv, char** argc) {
     int size = ftell(fileSrc);    
     rewind(fileSrc); 
 
-    char* src = calloc(size, sizeof(char));
+    src = calloc(size, sizeof(char));
     jmp = calloc(size, sizeof(int));
     Stack stack = stackInit();
     
@@ -68,17 +81,18 @@ int main(int argv, char** argc) {
     }
     src[i] = -1;
 
-    //for (int i=0; i<size; i++) {
-        //if (jmp[i] != 0)
-            //printf("%d\t\t%d\t\t\%c\t%c\n", i, jmp[i], src[i], src[jmp[i]]);
-    //}
-    //exit(0);
-    exec(src, debug, NEWLINE);
+    if (stackCount(stack) != 0) {
+        printf("Unmatched bracket. Exiting...");
+        exit(-1);
+    }
+
+    free(stack);
+    
+    exec(debug, NEWLINE);
 }
 
 
-void exec(char* src, int debug, int newline) {
-    char ram[RAMSIZE] = {0};
+void exec(int debug, int newline) {
     char* dp = ram;
     char* ip = src;
     
