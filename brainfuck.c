@@ -66,11 +66,11 @@ int main(int argv, char** argc) {
             }
         }
     }
-    src[++i] = -1;
+    src[i] = -1;
 
     for (int i=0; i<size; i++) {
         if (jmp[i] != 0)
-            printf("%d\t\t%d\n", i, jmp[i]);
+            printf("%d\t\t%d\t\t\%c\t%c\n", i, jmp[i], src[i], src[jmp[i]]);
     }
     //exit(0);
     exec(src, debug, NEWLINE);
@@ -83,9 +83,7 @@ void exec(char* src, int debug, int newline) {
     char* ip = src;
     
     while(*ip != -1) {
-        int stack = 0;
-        int innerStackLvl;
-
+        
         if (dp - ram >= RAMSIZE) {
             printf("Out of bound error\n");
             exit(-1);
@@ -115,20 +113,12 @@ void exec(char* src, int debug, int newline) {
                 scanf(" %c", dp);
                 break;
             case BEQZ:
-                if (*dp == 0) {
-                    if (debug) printf("\t[BEQZ]");
+                if (*dp == 0)
                     ip = src + jmp[ip - src];
-                }
-                else {
-                    stack++;
-                }
                 break;
             case BNEZ:
-                if (*dp != 0) {
-                    ip = src + jmp[ip - src] ;
-                } else {
-                    stack--;
-                }
+                if (*dp != 0)
+                    ip = src + jmp[ip - src];
                 break;
             }
         if (debug) printf("\n");
