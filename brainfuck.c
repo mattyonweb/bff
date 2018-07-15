@@ -46,10 +46,10 @@ int main(int argv, char** argc) {
 
     char* src = calloc(size, sizeof(char));
     char c;
-    for(int i=0; (c = fgetc(fileSrc)) != 0x10; i++) {
+    for(int i=0; (c = fgetc(fileSrc)) != 10; i++) {
         src[i] = c;
     }
-    src[size] = 0x10;
+    src[size] = 10;
     
     exec(src, debug, NEWLINE);
 }
@@ -61,8 +61,10 @@ void exec(char* src, int debug, int newline) {
     
     while(*ip != 10) { //0x0a, eof in Linux
         int stack = 0;
+        int innerStackLvl;
+        
         if (debug) 
-            printf("[READING]\t%c\t%ld\t%ld\t%d", *ip, ip-src, dp-ram, *dp);
+            printf("[READING]\t%c\t%d\t%d\t%d", *ip, ip-src, dp-ram, *dp);
         
         switch(*ip) {
             case INC_DP:
@@ -89,12 +91,17 @@ void exec(char* src, int debug, int newline) {
                     if (debug) printf("\t[BEQZ]");
                     
                     ip++;
-                    for(;!(*ip == BNEZ && stack == 0); ip++) {
+                    innerStackLvl = 0;
+                    
+                    for(;!(*ip == BNEZ && innerStackLvl == 0); ip++) {
                         if (*ip == BNEZ)    // Sono necessarie queste righe?
-                            stack--;        // Tutte le [ e ] all'interno di un
+                            innerStackLvl--;        // Tutte le [ e ] all'interno di un
                         if (*ip == BEQZ)    // blocco [] sono da ignorare no?
-                            stack++;
+                            innerStackLvl++;
                     }
+                }
+                else {
+                    stack++;
                 }
                 break;
             case BNEZ:
@@ -102,12 +109,16 @@ void exec(char* src, int debug, int newline) {
                     if (debug) printf("\t[BNEZ]");
                     
                     ip--;
-                    for(; !(*ip == BEQZ && stack == 0); ip--) {
+                    innerStackLvl = 0;
+                    
+                    for(; !(*ip == BEQZ && innerStackLvl == 0); ip--) {
                         if (*ip == BNEZ)
-                            stack++;
+                            innerStackLvl++;
                         if (*ip == BEQZ)
-                            stack--;
+                            innerStackLvl--;
                     }
+                } else {
+                    stack--;
                 }
                 break;
             }
