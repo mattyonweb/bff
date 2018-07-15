@@ -25,7 +25,7 @@ int main(int argv, char** argc) {
     int debug;
     
     if (argv == 1 || argv > 3) {
-        printf("There should be only 2/3 args. Exiting...");
+        printf("There should be only 2/3 args. Exiting...\n");
         exit(-1);
     }
     if (argv == 2)
@@ -42,20 +42,20 @@ int main(int argv, char** argc) {
     //lunghezza del file (che palle)
     fseek(fileSrc, 0L, SEEK_END);
     int size = ftell(fileSrc);    
-    char* src = calloc(size, sizeof(char));
     rewind(fileSrc);    //riporta il pointer di fileSrc a inizio file
-    
+
+    char* src = calloc(size, sizeof(char));
     char c;
-    for(int i=0; (c = fgetc(fileSrc)) != 10; i++) {
+    for(int i=0; (c = fgetc(fileSrc)) != 0x10; i++) {
         src[i] = c;
     }
-    src[size] = 10;
+    src[size] = 0x10;
     
     exec(src, debug, NEWLINE);
 }
 
 void exec(char* src, int debug, int newline) {
-    char ram[RAMSIZE];
+    char ram[RAMSIZE] = {0};
     char* dp = ram;
     char* ip = src;
     
@@ -90,9 +90,9 @@ void exec(char* src, int debug, int newline) {
                     
                     ip++;
                     for(;!(*ip == BNEZ && stack == 0); ip++) {
-                        if (*ip == BNEZ)
-                            stack--;
-                        if (*ip == BEQZ)
+                        if (*ip == BNEZ)    // Sono necessarie queste righe?
+                            stack--;        // Tutte le [ e ] all'interno di un
+                        if (*ip == BEQZ)    // blocco [] sono da ignorare no?
                             stack++;
                     }
                 }
