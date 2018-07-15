@@ -1,7 +1,6 @@
 /* BRAINFUCK INTERPRETER
  * Lanciato da linea di comando:
  * ./brainfuck nomefile.bf <debug {0|1}>
- * 
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +39,14 @@ enum instructions {
     
 int main(int argv, char** argc) {
     if (argv == 1 || argv > 3) {
-        printf("There should be only 2/3 args. Exiting...\n");
+        printf("brainfuck - a brainfuck interpreter\n\n");
+        printf("Syntax:\n");
+        printf("\tbrainfuck [filename] <debug>\n");
+        printf("\n");
+        printf("Usage:\n");
+        printf("\twithout flags, brainfuck executes the .bf file as it is.\n");
+        printf("\t<debug> can be set either to 0 or 1; the latter enables it.\n");
+        printf("\tbrainfuck with no arguments prints this text.\n");
         exit(-1);
     }
 
