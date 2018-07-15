@@ -10,6 +10,7 @@
 #define RAMSIZE 30000
 #define NEWLINE 0
 
+void parse(FILE * fileSrc);
 void exec(int debug, int newline);
 
 /* jmp -> Jump Table.
@@ -38,16 +39,12 @@ enum instructions {
 };
     
 int main(int argv, char** argc) {
-    int debug;
-    
     if (argv == 1 || argv > 3) {
         printf("There should be only 2/3 args. Exiting...\n");
         exit(-1);
     }
-    if (argv == 2)
-        debug = 0;
-    else
-        debug = atoi(argc[2]);
+
+    int debug = (argv == 2) ? 0 : atoi(argc[2]);
     
     FILE * fileSrc = fopen(argc[1], "rb");
     if (fileSrc == NULL) {
@@ -55,28 +52,42 @@ int main(int argv, char** argc) {
         exit(-1); 
     }
     
-    //lunghezza del file (che palle)
-    fseek(fileSrc, 0L, SEEK_END);
-    int size = ftell(fileSrc);    
-    rewind(fileSrc); 
+    parse(fileSrc);
+    
+    exec(debug, NEWLINE);
+}
 
+void parse(FILE * fileSrc) {
+    // measure file size
+    fseek(fileSrc, 0, SEEK_END);
+    int size = ftell(fileSrc);    
+    rewind(fileSrc);
+
+    // allocate space for source code and memory
     src = calloc(size, sizeof(char));
     jmp = calloc(size, sizeof(int));
     Stack stack = stackInit();
-    
-    int i = 0;
+
+    // parse
+    int  i = 0;
     char c;
     while ((c = fgetc(fileSrc)) != EOF) {
-        if (c == '>' || c == '<' ||c == '.' ||c == ',' ||c == '-' ||c == '+' ||c == '[' ||c == ']') {
+        if (c == '>' || c == '<' || c == '.' || c == ',' ||
+            c == '-' || c == '+' || c == '[' || c == ']') {
+
+            /* Copy char in src */
             src[i++] = c;
+
+            /* Populate jmp table */
             if (c == '[')
                 stackPush(stack, i-1);
             if (c == ']') {
-                int idx1 = stackPop(stack);
+                int idx1 = stackPop(stack); // also checks if len(stack) < 0 
                 int idx2 = i-1;
                 jmp[idx1] = idx2;
                 jmp[idx2] = idx1;
             }
+            
         }
     }
     src[i] = -1;
@@ -87,10 +98,10 @@ int main(int argv, char** argc) {
     }
 
     free(stack);
-    
-    exec(debug, NEWLINE);
+    src = realloc(src, i);
+    jmp = realloc(jmp, i * sizeof(int));
+    fclose(fileSrc);
 }
-
 
 void exec(int debug, int newline) {
     char* dp = ram;
@@ -134,7 +145,8 @@ void exec(int debug, int newline) {
                 if (*dp != 0)
                     ip = src + jmp[ip - src];
                 break;
-            }
+        }
+
         if (debug) printf("\n");
         ip++;
     }
