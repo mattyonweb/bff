@@ -71,7 +71,7 @@ void parse(FILE * fileSrc) {
     rewind(fileSrc);
 
     // allocate space for source code and memory
-    src = calloc(size, sizeof(char));
+    src = calloc(size, sizeof(unsigned char));
     jmp = calloc(size, sizeof(int));
     Stack stack = stackInit();
 
