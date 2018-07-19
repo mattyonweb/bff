@@ -50,9 +50,10 @@ int main(int argv, char** argc) {
         exit(-1);
     }
 
-    int debug = (argv == 2) ? 0 : atoi(argc[2]);
+    int fileIndex = (argv == 3) ? 2 : 1; 
+    int debugMode = (argv == 3) ? *argc[1] - 48 : 0;
     
-    FILE * fileSrc = fopen(argc[1], "rb");
+    FILE * fileSrc = fopen(argc[fileIndex], "rb");
     if (fileSrc == NULL) {
         printf("File not found. Exiting...");
         exit(-1); 
@@ -60,7 +61,7 @@ int main(int argv, char** argc) {
     
     parse(fileSrc);
     
-    exec(debug, NEWLINE);
+    exec(debugMode, NEWLINE);
 }
 
 void parse(FILE * fileSrc) {
@@ -121,7 +122,7 @@ void exec(int debug, int newline) {
         }
         
         if (debug) 
-            printf("[READING]\t%c\t%d\t%d\t%d", *ip, ip-src, dp-ram, *dp);
+            printf("%c\t%d\t%d\t%d", *ip, ip-src, dp-ram, *dp);
         
         switch(*ip) {
             case INC_DP:
@@ -137,6 +138,7 @@ void exec(int debug, int newline) {
                 *dp = -1 + *dp;
                 break;
             case OUTPUT:
+                if (debug) printf("\t");
                 printf("%c", *dp);
                 if (newline) printf("\n");
                 break;

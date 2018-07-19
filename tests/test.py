@@ -14,7 +14,7 @@ results = {
 
 where_am_i   = os.path.abspath(__file__)
 tests_folder = "/".join(where_am_i.split("/")[:-1])
-binary_path  = "/".join(tests_folder.split("/")[:-1]) + "/brainfuck"
+binary_path  = "/".join(tests_folder.split("/")[:-1]) + "/bff"
 
 successful = 0
 
