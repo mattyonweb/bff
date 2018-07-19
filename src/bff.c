@@ -21,10 +21,10 @@ int * jmp;
 /* src -> source code.
  * In fase di lettura del file sorgente, tutti i caratteri non necessari
  * non verranno inseriti in src. */
-char * src;
+unsigned char * src;
 
 /* ram -> memoria centrale del programma. */
-char ram[RAMSIZE] = {0};
+unsigned char ram[RAMSIZE] = {0};
 
 enum instructions {
      INC_DP = '>',
@@ -97,7 +97,7 @@ void parse(FILE * fileSrc) {
             
         }
     }
-    src[i] = -1;
+    src[i] = 0;
 
     if (stackCount(stack) != 0) {
         printf("Unmatched bracket. Exiting...");
@@ -111,10 +111,10 @@ void parse(FILE * fileSrc) {
 }
 
 void exec(int debug, int newline) {
-    char* dp = ram;
-    char* ip = src;
+    unsigned char* dp = ram;
+    unsigned char* ip = src;
     
-    while(*ip != -1) {
+    while(*ip != 0) {
         
         if (dp - ram >= RAMSIZE) {
             printf("Out of bound error\n");
